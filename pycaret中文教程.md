@@ -1,3 +1,5 @@
+
+
 # PyCaret 中文教程
 
 - 本教程是基于PyCaret2.3.6[官方文档](https://pycaret.readthedocs.io/en/latest/installation.html#installing-the-full-version)翻译
@@ -95,7 +97,7 @@ pip install pycaret-nightly -i https://mirrors.aliyun.com/pypi/simple/
 
 - Extreme Gradient Boosting （无需另外安装）
 - Catboost（无需另外安装）
-- LightGBM(Light Gradient Boosting Machine) （[LightGBM GPU Tutorial]([LightGBM GPU Tutorial — LightGBM 3.3.2.99 documentation](https://lightgbm.readthedocs.io/en/latest/GPU-Tutorial.html))）
+- LightGBM(Light Gradient Boosting Machine) （[LightGBM GPU Tutorial](https://lightgbm.readthedocs.io/en/latest/GPU-Tutorial.html)) 
 - Logistic Regression, Ridge Classifier, Random Forest, K Neighbors Classifier, K Neighbors Regressor, Support Vector Machine, Linear Regression, Ridge Regression, Lasso Regression 要求 [cuML>=0.15](https://github.com/rapidsai/cuml)
 
 ​		如果使用的是 Google Colab，为 GPU 安装 Light Gradient Boosting Machine时，必须在 CPU 上卸载 LightGBM， 使用下面的命令进行：
@@ -159,7 +161,7 @@ docker run -p 8888:8888 pycaret/full
 
 ### 2.1 介绍
 
-按下atrl 按，点击你想要选择的:
+按下ctrl 键，鼠标点击你想要选择的:
 
 - [分类](#2.2 Classification)
 - [回归](#2.3 回归)
@@ -171,18 +173,131 @@ docker run -p 8888:8888 pycaret/full
 
 ### 2.2 分类
 
-PyCaret 的分类模块是一个有监督的机器学习模块，用于将元素分类。 目标是预测离散且无序的分类类别标签。 一些常见的用例包括预测客户违约（是或否）、预测客户流失（客户将离开或留下）、发现的疾病（正面或负面），该模块可用于二元或多类问题。 它提供了几个[预处理功能](https://pycaret.gitbook.io/docs/get-started/preprocessing)，通过[设置](https://pycaret.gitbook.io/docs/get-started/functions#setting-up-environment)功能为建模准备数据。 它有超过 18 种即用型算法和几个图表来分析训练模型的性能。 
+​		PyCaret 的分类模块是一个有监督的机器学习模块，用于将元素分类。 目标是预测离散且无序的分类类别标签。 一些常见的用例包括预测客户违约（是或否）、预测客户流失（客户将离开或留下）、发现的疾病（正面或负面），该模块可用于二元或多类问题。 它提供了几个[预处理功能](https://pycaret.gitbook.io/docs/get-started/preprocessing)，通过[设置](https://pycaret.gitbook.io/docs/get-started/functions#setting-up-environment)功能为建模准备数据。 它有超过 18 种即用型算法和几个图表来分析训练模型的性能。 
 
 #### 2.2.1 初始化设置
 
-`setup()` 函数将会初始化训练环境以及创建流水线式的转换工作机制；在使用其他函数之前必须先调用 `setup()` 函数，`setup()` 必须设置两个参数：`data` 和`target` , 其他参数为可选参数。
+​		`setup()` 函数将会初始化训练环境以及创建流水线式的转换工作机制；在使用其他函数之前必须先调用 `setup()` 函数，`setup()` 必须设置两个参数：`data` 和`target` , 其他参数为可选参数。
 
 ```python
 from pycaret.datasets import get_data
 data = get_data('diabetes')
 ```
 
-![]()
+![](image\image_1.png)
+
+```python
+from pycaret.classification import *
+s = setup(data, target = 'Class variable')
+```
+
+![](image\2.png)
+
+​		当开始执行`setup()`时，PyCaret 的推理算法将根据某些属性自动推断所有特征的数据类型，但该推断算法不能保证每次推断完全准确，因此执行了`setup()`，PyCaret 会显示一个提示，要求确认数据类型。 如果所有数据类型都正确，您可以按 `enter` 或键入 `quit` 退出设置。由于PyCaret 自动化执行多种特定的数据预处理工作，因此确保数据类型正确非常重要，这对于机器学习来讲必不可少。
+
+​		另外也可以自己预定义数据类型，设置`setup()` 的参数`numeric_features` 和`categorical_features` 。
+
+ ![setup()参数](image\3.png)
+
+
+
+
+
+
+
+#### 2.2.2 模型比较
+
+1. `compare_models()` 使用交叉验证来训练和评估模型库中可用的模型，该函数输出的是含有平均交叉验证分数的分数表。可以通过`get_metrics()`来获取交叉验证期间评估的指标，同时自定义指标可以使用`add_metric()` 和 `remove_metric()` 来增加或者删除。
+
+   ```python
+   best = compare_models()
+   ```
+
+![](image/4.png)
+
+```python
+print(best)
+```
+
+ ![](image/5.png)
+
+
+
+#### 2.2.3 分析模型
+
+  1. `evaluate_model()` 是用于分析在测试集上训练的模型性能，在某些情况下，它可能需要重新训练模型。由于使用了**ipywidget**，`evaluate_model()` 只能在 **Notebook** 上使用.
+
+     ```python
+     evaluate_model(best)
+     ```
+
+     
+
+
+
+![](image/6.png)
+
+
+
+2. 使用`plot_model()` 单独生成不同指标的分析图。	
+
+   ```python
+   plot_model(best, plot = 'auc')
+   ```
+
+   ![](image/7.png)
+
+   ```python
+   plot_model(best, plot = 'confusion_matrix')
+   ```
+
+   ![](image/8.png)
+
+#### 2.2.5 预测
+
+  1. `predict_model()` 函数使用训练后的模型预测**标签(Label)**和**分数(Score)** (预测类别的概率)。当参数`data` =`None`时，该函数就会预测测试数据上**Label** 和**Score**，**测试数据集在调用`setup()` 时创建。**
+
+     ```python 
+     predict_model(best)
+     ```
+
+     ![](image/9.png)
+
+     
+
+     评估指标是在测试集上进行计算得到的；上面第二个输出的是调用`pd.DataFrame()` 创建的，最后两列为测试集合的预测结果。
+
+		2. 通过对函数`predict_model()` 参数`data` 进行修改，就可以对新的数据集进行预测生成标签。
+
+     ```python
+     predictions = predict_model(best, data=data)
+     predictions.head()
+     ```
+
+     ![](image/10.png)
+
+#### 2.2.6 保存与加载模型
+
+1. 模型保存
+
+   `save_model()`用于保存自己想要使用的模型，比如上面的`best` 模型。
+
+   ```python
+   save_model(best, 'my_best_pipeline')
+   ```
+
+   ![](image/11.png)
+
+   2. 模型加载
+
+      `load_model()` 用于将`save_model()`保存下来的模型重新加载会环境内，用于预测。
+
+      ```python
+      loaded_model = load_model('my_best_pipeline')
+      print(loaded_model)
+      ```
+
+      ![](image/12.png)
 
 ### 2.3 回归
 
